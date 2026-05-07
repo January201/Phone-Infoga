@@ -1,65 +1,90 @@
-<p align="center">
-  <img src="https://i.imgur.com/LtUGnF3.png" width=500 />
-</p>
+# PhoneInfoga installer
 
-<div align="center">
-  <a href="https://travis-ci.org/sundowndev/PhoneInfoga">
-    <img src="https://img.shields.io/travis/sundowndev/PhoneInfoga/master.svg?style=flat-square" alt="Build Status" />
-  </a>
-  <a href="https://hub.docker.com/r/sundowndev/phoneinfoga/builds">
-    <img src="https://img.shields.io/docker/cloud/build/sundowndev/phoneinfoga.svg?style=flat-square" alt="Build Status" />
-  </a>
-  <a href="#">
-    <img src="https://img.shields.io/badge/python-3.6-blue.svg?style=flat-square" alt="Python version" />
-  </a>
-  <a href="https://github.com/sundowndev/PhoneInfoga/releases">
-    <img src="https://img.shields.io/github/release/SundownDEV/PhoneInfoga.svg?style=flat-square" alt="Latest version" />
-  </a>
-  <a href="https://github.com/sundowndev/PhoneInfoga/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/sundowndev/PhoneInfoga.svg?style=flat-square" alt="License" />
-  </a>
-</div>
+A small installer script that downloads the latest [PhoneInfoga](https://github.com/sundowndev/phoneinfoga)
+release binary and drops it on your `$PATH`.
 
-<h4 align="center">Information gathering & OSINT reconnaissance tool for phone numbers</h4>
+PhoneInfoga is an OSINT framework for scanning international phone numbers — it
+checks number validity, gathers carrier / country / line-type information, and
+helps pivot to public footprints (search engines, reputation reports, etc.).
 
-### How to install
-- <b>Silent installation:</b></br>
-Copy and paste the following command in Termux to silently install PhineInfoga Tool:<br/>
-```clear && echo -e '\033[1;32m[*] Download starting...' && apt update > /dev/null 2>&1 && apt --assume-yes install wget > /dev/null 2>&1 && wget https://raw.githubusercontent.com/ExpertAnonymous/PhoneInfoga/master/phoneinfoga.sh -q && clear && bash phoneinfoga.sh```<br/>
+> This repo only ships the installer. The tool itself lives upstream at
+> [`sundowndev/phoneinfoga`](https://github.com/sundowndev/phoneinfoga).
+> The previous Python version (v1) is no longer maintained — this installer
+> fetches the current Go-based v2 release.
 
-### About
+## Supported platforms
 
-PhoneInfoga is one of the most advanced tools to scan phone numbers using only free resources. The goal is to first gather standard information such as country, area, carrier and line type on any international phone numbers with a very good accuracy. Then search for footprints on search engines to try to find the VoIP provider or identify the owner.
+- Linux (x86_64, arm64, armv6, i386)
+- macOS (x86_64, arm64)
+- Termux on Android (arm64, armv6)
 
-### Features
+## Install
 
-- Check if phone number exists and is possible
-- Gather standard informations such as country, line type and carrier
-- OSINT footprinting using external APIs, Google Hacking, phone books & search engines
-- Check for reputation reports, social media, disposable numbers and more
-- Scan several numbers at once
-- Use custom formatting for more effective OSINT reconnaissance
-- Automatic footprinting on several custom formats
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/january201/phone-infoga/master/phoneinfoga.sh)
+```
 
-![Footprinting process](https://i.imgur.com/qCkgzz8.png)
+Or clone and run locally:
 
-## Subscribe our channel on youtube:
-https://www.youtube.com/ExpertAnonymousOfficial
+```bash
+git clone https://github.com/january201/phone-infoga.git
+cd phone-infoga
+bash phoneinfoga.sh
+```
 
-## 👥 ***Join***
+### Options
 
-### Facebook page:
-https://www.facebook.com/ExpertAnonymous
+| Variable               | Purpose                                                  |
+|------------------------|----------------------------------------------------------|
+| `PHONEINFOGA_VERSION`  | Pin a specific release tag (e.g. `v2.11.0`). Default: `latest`. |
+| `PHONEINFOGA_PREFIX`   | Install under `<prefix>/bin` instead of the default.    |
+| `GITHUB_TOKEN`         | Optional, used to avoid rate-limiting on the GitHub API. |
 
-### Telegram Group:
-https://t.me/ExpertAnonymousOfficial
+Examples:
 
-### Instagram: 
-https://www.instagram.com/ExpertAnonymous
+```bash
+PHONEINFOGA_VERSION=v2.11.0 bash phoneinfoga.sh
+PHONEINFOGA_PREFIX="$HOME/.local" bash phoneinfoga.sh
+```
 
-### Twitter:
-https://www.twitter.com/ExpertAnonymoux
+## Default install location
 
-### 📢 Warning
+| Environment              | Path                  |
+|--------------------------|-----------------------|
+| Termux                   | `$PREFIX/bin`         |
+| Linux/macOS (root)       | `/usr/local/bin`      |
+| Linux/macOS (non-root)   | `$HOME/.local/bin`    |
 
-***This tool is only for educational purpose. If you use this tool for other purposes except education we will not be responsible in such cases.***
+Make sure the chosen directory is on your `$PATH`.
+
+## Requirements
+
+- `curl`
+- `tar`
+- Either `jq` *or* `python3` (used to parse the GitHub release manifest)
+
+The script does **not** install Python, pip, or any v1-era dependencies — the
+upstream binary is self-contained.
+
+## Usage
+
+After installation:
+
+```bash
+phoneinfoga version
+phoneinfoga scan -n "+33 1 23 45 67 89"
+phoneinfoga serve   # web UI on :5000
+```
+
+See the [upstream documentation](https://sundowndev.github.io/phoneinfoga/)
+for the full command reference.
+
+## License
+
+The installer in this repository is provided as-is. PhoneInfoga itself is
+licensed by its upstream authors — see the upstream repository for details.
+
+## Disclaimer
+
+This tool is intended for authorized OSINT, security research, and educational
+use. The maintainers are not responsible for misuse.
