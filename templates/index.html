@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PhoneInfoga</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #58a6ff;
+    }
+
+    header p {
+      margin-top: 8px;
+      color: #8b949e;
+      font-size: 0.95rem;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .search-box input {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 1rem;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #e6edf3;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: #58a6ff;
+    }
+
+    .search-box input::placeholder {
+      color: #484f58;
+    }
+
+    .search-box button {
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: #238636;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .search-box button:hover { background: #2ea043; }
+    .search-box button:disabled { background: #21262d; color: #484f58; cursor: not-allowed; }
+
+    #status {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: #8b949e;
+      height: 20px;
+    }
+
+    #results {
+      margin-top: 32px;
+      width: 100%;
+      max-width: 560px;
+      display: none;
+    }
+
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #21262d;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .badge.valid { background: #0d4a1f; color: #3fb950; border: 1px solid #238636; }
+    .badge.possible { background: #0c2d6b; color: #79c0ff; border: 1px solid #388bfd; }
+    .badge.warning { background: #4a2800; color: #e3b341; border: 1px solid #d29922; }
+
+    .card-header .number-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #e6edf3;
+    }
+
+    .row-list {
+      list-style: none;
+    }
+
+    .row-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 12px 20px;
+      border-bottom: 1px solid #21262d;
+      font-size: 0.9rem;
+    }
+
+    .row-list li:last-child { border-bottom: none; }
+
+    .row-list .label {
+      color: #8b949e;
+      min-width: 140px;
+      flex-shrink: 0;
+    }
+
+    .row-list .value {
+      color: #e6edf3;
+      text-align: right;
+      word-break: break-all;
+    }
+
+    .row-list .value.empty { color: #484f58; font-style: italic; }
+
+    .error-box {
+      background: #3d0f0f;
+      border: 1px solid #f85149;
+      border-radius: 8px;
+      padding: 14px 18px;
+      color: #ff7b72;
+      font-size: 0.9rem;
+    }
+
+    footer {
+      margin-top: auto;
+      padding-top: 48px;
+      color: #484f58;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PhoneInfoga</h1>
+    <p>Phone number intelligence & OSINT lookup</p>
+  </header>
+
+  <div class="search-box">
+    <input
+      id="phoneInput"
+      type="text"
+      placeholder="e.g. +1 650 253 0000"
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <button id="scanBtn" onclick="scan()">Scan</button>
+  </div>
+
+  <div id="status"></div>
+  <div id="results"></div>
+
+  <footer>For educational and authorized research purposes only.</footer>
+
+  <script>
+    const input = document.getElementById('phoneInput');
+    const btn = document.getElementById('scanBtn');
+    const status = document.getElementById('status');
+    const results = document.getElementById('results');
+
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') scan(); });
+
+    function setLoading(on) {
+      btn.disabled = on;
+      btn.textContent = on ? 'Scanning...' : 'Scan';
+      status.textContent = on ? 'Fetching information...' : '';
+    }
+
+    function val(v) {
+      if (!v || v === '') return '<span class="value empty">—</span>';
+      return `<span class="value">${escHtml(v)}</span>`;
+    }
+
+    function escHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    async function scan() {
+      const number = input.value.trim();
+      if (!number) { status.textContent = 'Enter a phone number first.'; return; }
+
+      setLoading(true);
+      results.style.display = 'none';
+      results.innerHTML = '';
+
+      try {
+        const res = await fetch('/api/scan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ number }),
+        });
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+          results.innerHTML = `<div class="error-box">Error: ${escHtml(data.error || 'Unknown error')}</div>`;
+          results.style.display = 'block';
+          setLoading(false);
+          return;
+        }
+
+        const badges = [
+          data.valid ? '<span class="badge valid">&#10003; Valid</span>' : '<span class="badge warning">&#10007; Invalid</span>',
+          data.possible ? '<span class="badge possible">&#10003; Possible</span>' : '<span class="badge warning">Unlikely</span>',
+        ].join(' ');
+
+        const timezones = data.timezones && data.timezones.length
+          ? data.timezones.join(', ')
+          : '';
+
+        results.innerHTML = `
+          <div class="card">
+            <div class="card-header">
+              <span class="number-title">${escHtml(data.international)}</span>
+              ${badges}
+            </div>
+            <ul class="row-list">
+              <li><span class="label">E.164 format</span>${val(data.e164)}</li>
+              <li><span class="label">Local format</span>${val(data.local)}</li>
+              <li><span class="label">Country code</span>${val(data.country_code)}</li>
+              <li><span class="label">Country</span>${val(data.country + (data.country_iso ? ' (' + data.country_iso + ')' : ''))}</li>
+              <li><span class="label">Location / Area</span>${val(data.location)}</li>
+              <li><span class="label">Carrier</span>${val(data.carrier)}</li>
+              <li><span class="label">Line type</span>${val(data.number_type)}</li>
+              <li><span class="label">Timezone(s)</span>${val(timezones)}</li>
+            </ul>
+          </div>
+        `;
+        results.style.display = 'block';
+      } catch (err) {
+        results.innerHTML = `<div class="error-box">Network error: ${escHtml(err.message)}</div>`;
+        results.style.display = 'block';
+      }
+
+      setLoading(false);
+    }
+  </script>
+</body>
+</html>
