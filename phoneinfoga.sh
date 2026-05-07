@@ -16,6 +16,9 @@ set -euo pipefail
 
 REPO="sundowndev/phoneinfoga"
 VERSION="${PHONEINFOGA_VERSION:-latest}"
+TMPDIR_INSTALL=""
+cleanup() { [ -n "${TMPDIR_INSTALL}" ] && rm -rf "${TMPDIR_INSTALL}"; }
+trap cleanup EXIT
 
 c_red='\033[1;91m'
 c_green='\033[1;92m'
@@ -138,8 +141,8 @@ main() {
   [ -n "$url" ] || die "no release asset matches ${asset_os}/${arch}"
 
   log "downloading $(basename "$url")"
-  tmp="$(mktemp -d)"
-  trap 'rm -rf "$tmp"' EXIT
+  TMPDIR_INSTALL="$(mktemp -d)"
+  tmp="${TMPDIR_INSTALL}"
   archive="${tmp}/phoneinfoga.tar.gz"
   curl -fsSL -o "$archive" "$url"
 
