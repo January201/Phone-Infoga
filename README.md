@@ -34,11 +34,19 @@ bash phoneinfoga.sh
 
 ### Options
 
-| Variable               | Purpose                                                  |
-|------------------------|----------------------------------------------------------|
-| `PHONEINFOGA_VERSION`  | Pin a specific release tag (e.g. `v2.11.0`). Default: `latest`. |
-| `PHONEINFOGA_PREFIX`   | Install under `<prefix>/bin` instead of the default.    |
-| `GITHUB_TOKEN`         | Optional, used to avoid rate-limiting on the GitHub API. |
+| Variable                  | Purpose                                                  |
+|---------------------------|----------------------------------------------------------|
+| `PHONEINFOGA_VERSION`     | Pin a specific release tag (e.g. `v2.11.0`). Default: `latest`. |
+| `PHONEINFOGA_PREFIX`      | Install under `<prefix>/bin` instead of the default.     |
+| `PHONEINFOGA_COLOR`       | `auto` (default) · `rainbow` · `neon` · `mono`/`off`.    |
+| `PHONEINFOGA_NO_BANNER`   | Set to `1` to skip the ASCII banner.                     |
+| `NO_COLOR`                | Standard opt-out — disables all color output.            |
+| `GITHUB_TOKEN`            | Optional, used to avoid rate-limiting on the GitHub API. |
+
+The installer auto-detects terminal capability: truecolor terminals get the
+rainbow gradient banner with cycling log accents and an animated spinner;
+256-color terminals fall back to a neon palette; non-TTYs and `NO_COLOR`
+environments get plain text.
 
 Examples:
 
